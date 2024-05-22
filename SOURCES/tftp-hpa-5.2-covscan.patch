@@ -128,58 +128,6 @@ index 1b8a881..b2f9059 100644
 -- 
 2.35.1
 
-# Fix Calling "setsockopt" without checking return value. This library
-# function may fail and return an error code.
-diff --git a/tftpd/recvfrom.c b/tftpd/recvfrom.c
-index d7ef500..e0074d8 100644
---- a/tftpd/recvfrom.c
-+++ b/tftpd/recvfrom.c
-@@ -26,6 +26,7 @@
- 
- #if defined(HAVE_RECVMSG) && defined(HAVE_MSGHDR_MSG_CONTROL)
- 
-+#include <syslog.h>
- #include <sys/uio.h>
- 
- #ifdef IP_PKTINFO
-@@ -151,16 +151,19 @@ myrecvfrom(int s, void *buf, int len, unsigned int flags,
-     /* Try to enable getting the return address */
- #ifdef IP_RECVDSTADDR
-     if (from->sa_family == AF_INET || !from->sa_family)
--        setsockopt(s, IPPROTO_IP, IP_RECVDSTADDR, &on, sizeof(on));
-+        if (setsockopt(s, IPPROTO_IP, IP_RECVDSTADDR, &on, sizeof(on)) == -1)
-+            syslog(LOG_ERR, "cannot setsockopt IP_RECVDSTADDR %m");
- #endif
- #ifdef IP_PKTINFO
-     if (from->sa_family == AF_INET || !from->sa_family)
--        setsockopt(s, IPPROTO_IP, IP_PKTINFO, &on, sizeof(on));
-+        if (setsockopt(s, IPPROTO_IP, IP_PKTINFO, &on, sizeof(on)) == -1)
-+            syslog(LOG_ERR, "cannot setsockopt IP_PKTINFO %m");
- #endif
- #ifdef HAVE_IPV6
- #ifdef IPV6_RECVPKTINFO
-     if (from->sa_family == AF_INET6 || !from->sa_family)
--        setsockopt(s, IPPROTO_IPV6, IPV6_RECVPKTINFO, &on, sizeof(on));
-+        if (setsockopt(s, IPPROTO_IPV6, IPV6_RECVPKTINFO, &on, sizeof(on)) == -1)
-+            syslog(LOG_ERR, "cannot setsockopt IPV6_RECVPKTINFO %m");
- #endif
- #endif
-     bzero(&msg, sizeof msg);    /* Clear possible system-dependent fields */
-diff --git a/tftpd/tftpd.c b/tftpd/tftpd.c
-index 364e7d2..36d6dec 100644
---- a/tftpd/tftpd.c
-+++ b/tftpd/tftpd.c
-@@ -224,7 +224,9 @@ static void pmtu_discovery_off(int fd)
- #if defined(IP_MTU_DISCOVER) && defined(IP_PMTUDISC_DONT)
-     int pmtu = IP_PMTUDISC_DONT;
- 
--    setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &pmtu, sizeof(pmtu));
-+    if (setsockopt(fd, IPPROTO_IP, IP_MTU_DISCOVER, &pmtu, sizeof(pmtu)) == -1)
-+        syslog(LOG_ERR, "cannot setsockopt IP_MTU_DISCOVER to "
-+                        "IP_PMTUDISC_DONT %m");
- #endif
- }
- 
 # Fixes negative_returns: "fd" is passed to a parameter of pmtu_discovery_off
 # that cannot be negative
 From 0b44159b3a2f51d350f309d3f6d14a17e74e8231 Mon Sep 17 00:00:00 2001

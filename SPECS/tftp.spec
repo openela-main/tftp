@@ -4,7 +4,7 @@
 Summary: The client for the Trivial File Transfer Protocol (TFTP)
 Name: tftp
 Version: 5.2
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: BSD
 Group: Applications/Internet
 URL: http://www.kernel.org/pub/software/network/tftp/
@@ -108,6 +108,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_unitdir}/*
 
 %changelog
+* Thu Jan 04 2024 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-37
+- fix regression with too chatty syslog calls when IPv6 is disabled (RHEL-20691)
+
 * Tue Apr 26 2022 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-26
 - Review and fix issues reported by static analysers (rhbz#2078858)
 
