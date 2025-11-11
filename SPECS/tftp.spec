@@ -3,12 +3,13 @@
 Summary: The client for the Trivial File Transfer Protocol (TFTP)
 Name: tftp
 Version: 5.2
-Release: 48%{?dist}
+Release: 50%{?dist}
 License: BSD-4-Clause-UC
 URL: http://www.kernel.org/pub/software/network/tftp/
 Source0: http://www.kernel.org/pub/software/network/tftp/tftp-hpa/tftp-hpa-%{version}.tar.bz2
 Source1: tftp.socket
 Source2: tftp.service
+Source3: tftp-server-tmpfiles.conf
 
 Patch0: tftp-0.40-remap.patch
 Patch2: tftp-hpa-0.39-tzfix.patch
@@ -24,6 +25,7 @@ Patch11: tftp-hpa-5.2-gcc10.patch
 Patch12: tftp-off-by-one.patch
 Patch13: tftp-c99.patch
 Patch14: tftp-hpa-5.2-osh.patch
+Patch15: tftp-hpa-5.2-tftp-exit-code-cmdmode.patch
 
 BuildRequires: autoconf
 BuildRequires: gcc
@@ -68,6 +70,7 @@ systemd socket activation, and is disabled by default.
 %patch12 -p1 -b .off-by-one
 %patch13 -p1
 %patch14 -p1 -b .osh
+%patch15 -p1 -b .cmd_exit_code
 
 %build
 autoreconf
@@ -80,12 +83,14 @@ mkdir -p ${RPM_BUILD_ROOT}%{_bindir}
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man{1,8}
 mkdir -p ${RPM_BUILD_ROOT}%{_sbindir}
 mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/lib/tftpboot
+mkdir -p ${RPM_BUILD_ROOT}%{_tmpfilesdir}
 mkdir -p ${RPM_BUILD_ROOT}%{_unitdir}
 
 make INSTALLROOT=${RPM_BUILD_ROOT} SBINDIR=%{_sbindir} MANDIR=%{_mandir} INSTALL='install -p' install
 
 install -p -m 644 %SOURCE1 ${RPM_BUILD_ROOT}%{_unitdir}
 install -p -m 644 %SOURCE2 ${RPM_BUILD_ROOT}%{_unitdir}
+install -p -m 644 %SOURCE3 ${RPM_BUILD_ROOT}%{_tmpfilesdir}/%{name}.conf
 
 %post server
 %systemd_post tftp.socket
@@ -107,9 +112,16 @@ install -p -m 644 %SOURCE2 ${RPM_BUILD_ROOT}%{_unitdir}
 %dir %{_localstatedir}/lib/tftpboot
 %{_sbindir}/in.tftpd
 %{_mandir}/man8/*
+%{_tmpfilesdir}/%{name}.conf
 %{_unitdir}/*
 
 %changelog
+* Tue Aug 05 2025 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-50
+- tftp: propagate exit codes in non-interactive mode (RHEL-102114)
+
+* Wed Feb 26 2025 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-49
+- fix creation of /var/lib/tftpboot in image mode (RHEL-79983)
+
 * Tue Oct 29 2024 Troy Dawson <tdawson@redhat.com> - 5.2-48
 - Bump release for October 2024 mass rebuild:
   Resolves: RHEL-64018
