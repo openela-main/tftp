@@ -4,7 +4,7 @@
 Summary: The client for the Trivial File Transfer Protocol (TFTP)
 Name: tftp
 Version: 5.2
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: BSD
 Group: Applications/Internet
 URL: http://www.kernel.org/pub/software/network/tftp/
@@ -24,6 +24,8 @@ Patch9: tftp-doc.patch
 Patch10: tftp-enhanced-logging.patch
 Patch11: tftp-rewrite-macro.patch
 Patch12: tftp-hpa-5.2-covscan.patch
+# https://git.kernel.org/pub/scm/network/tftp/tftp-hpa.git/commit/?id=4b493532f5ce052a1c124acd0661233ec7918327
+Patch13: tftp-hpa-5.2-CVE-2026-85234.patch
 
 BuildRequires: readline-devel autoconf systemd-units
 
@@ -63,6 +65,7 @@ systemd socket activation, and is disabled by default.
 %patch10 -p1 -b .logging
 %patch11 -p1 -b .rewrite-macro
 %patch12 -p1 -b .covscan
+%patch13 -p1 -b .CVE-2026-85234
 
 %build
 autoreconf
@@ -108,7 +111,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_unitdir}/*
 
 %changelog
-* Thu Jan 04 2024 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-37
+* Mon Sep 21 2026 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-28
+- fix buffer overflow in remap genmatchstring() with inverse rules
+  (CVE-2026-85234) (RHEL-260620)
+
+* Thu Jan 04 2024 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-27
 - fix regression with too chatty syslog calls when IPv6 is disabled (RHEL-20691)
 
 * Tue Apr 26 2022 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-26
