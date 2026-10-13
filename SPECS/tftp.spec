@@ -26,6 +26,8 @@ Patch12: tftp-off-by-one.patch
 Patch13: tftp-c99.patch
 Patch14: tftp-hpa-5.2-osh.patch
 Patch15: tftp-hpa-5.2-tftp-exit-code-cmdmode.patch
+# https://git.kernel.org/pub/scm/network/tftp/tftp-hpa.git/commit/?id=4b493532f5ce052a1c124acd0661233ec7918327
+Patch16: tftp-hpa-5.2-CVE-2026-85234.patch
 
 BuildRequires: autoconf
 BuildRequires: gcc
@@ -71,6 +73,7 @@ systemd socket activation, and is disabled by default.
 %patch13 -p1
 %patch14 -p1 -b .osh
 %patch15 -p1 -b .cmd_exit_code
+%patch16 -p1 -b .CVE-2026-85234
 
 %build
 autoreconf
@@ -116,6 +119,10 @@ install -p -m 644 %SOURCE3 ${RPM_BUILD_ROOT}%{_tmpfilesdir}/%{name}.conf
 %{_unitdir}/*
 
 %changelog
+* Mon Sep 21 2026 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-50.1
+- fix buffer overflow in remap genmatchstring() with inverse rules
+  (CVE-2026-85234) (RHEL-260604)
+
 * Tue Aug 05 2025 Lukáš Zaoral <lzaoral@redhat.com> - 5.2-50
 - tftp: propagate exit codes in non-interactive mode (RHEL-102114)
 
